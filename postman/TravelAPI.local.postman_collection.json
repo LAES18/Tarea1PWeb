@@ -1,0 +1,118 @@
+{
+  "info": {
+    "name": "Travel API Local",
+    "_postman_id": "d84c78c4-9f4b-4e5d-8a56-b775a5b2f903",
+    "description": "Coleccion local para login con token y CRUD de destinos en Laravel.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"demo@mail.com\",\n  \"password\": \"password123\",\n  \"device_name\": \"postman-local\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.token) { pm.collectionVariables.set('token', json.token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Destinations - List",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations?country=japan",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"],
+          "query": [
+            { "key": "country", "value": "japan" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Destinations - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"slug\": \"tokyo-api\",\n  \"country\": \"japan\",\n  \"title\": \"Tokio API\",\n  \"location\": \"Shinjuku\",\n  \"description\": \"Destino creado desde Postman\",\n  \"vibe\": \"Urbano\",\n  \"highlights\": [\"Luces\", \"Comida\"],\n  \"best_time\": \"7:00 p.m.\",\n  \"route\": \"Ruta centro\",\n  \"image_url\": \"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/destinations",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations"]
+        }
+      }
+    },
+    {
+      "name": "Destinations - Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Tokio API Editado\",\n  \"vibe\": \"Nocturno\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/destinations/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations", "1"]
+        }
+      }
+    },
+    {
+      "name": "Destinations - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/destinations/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["destinations", "1"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" }
+  ]
+}
