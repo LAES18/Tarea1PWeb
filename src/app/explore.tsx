@@ -1,5 +1,5 @@
 ﻿import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet } from 'react-native';
@@ -10,9 +10,62 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { getCountryBySlug } from '@/data/port-destinations';
 import { useTheme } from '@/hooks/use-theme';
+import { getApiToken, listViajes, type ApiViaje } from '@/services/travel-api';
 import { useTravelerProfile } from '@/utils/profile-storage';
 
 export default function DiscoverScreen() {
+  return <ApiTripsScreen />;
+}
+
+function ApiTripsScreen() {
+  const [viajes, setViajes] = useState<ApiViaje[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!getApiToken()) {
+      setLoading(false);
+      setError('Inicia sesión para consultar tus viajes protegidos por token.');
+      return;
+    }
+
+    listViajes()
+      .then(setViajes)
+      .catch((reason: Error) => setError(reason.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <ThemedView style={styles.screen}>
+      <StatusBar style="auto" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="subtitle">Mis viajes</ThemedText>
+          <ThemedText themeColor="textSecondary">Recursos obtenidos desde tu API REST Laravel.</ThemedText>
+          {loading && <ThemedText>Cargando viajes...</ThemedText>}
+          {!loading && error !== '' && <ThemedText themeColor="textSecondary" style={styles.intro}>{error}</ThemedText>}
+          {!loading && error === '' && viajes.length === 0 && <ThemedText>No hay viajes registrados todavía.</ThemedText>}
+          {viajes.map((viaje) => (
+            <ThemedView key={viaje.id} type="backgroundElement" style={styles.destinationCard}>
+              <ThemedView style={styles.cardBody}>
+                <ThemedText type="smallBold">{viaje.destino}, {viaje.pais}</ThemedText>
+                <ThemedText themeColor="textSecondary">{viaje.fecha_inicio} al {viaje.fecha_fin}</ThemedText>
+                <ThemedText themeColor="textSecondary" numberOfLines={2}>{viaje.descripcion}</ThemedText>
+                <Pressable
+                  onPress={() => router.push({ pathname: '/destination/[id]', params: { id: String(viaje.id), source: 'api' } })}
+                  style={styles.primaryButton}>
+                  <ThemedText type="smallBold" themeColor="text">Ver detalle</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function LegacyDiscoverScreen() {
   const theme = useTheme();
   const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const fadeIn = useRef(new Animated.Value(0)).current;

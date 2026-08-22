@@ -1,14 +1,19 @@
 import type { ImageSourcePropType } from 'react-native';
 
-import { default as italyDestinationOne, default as italyDestinationThree } from '../../assets/images/italy/florence.jpg';
-import { default as italyDestinationTwo, default as italyHero } from '../../assets/images/italy/rome.jpg';
-import japanDestinationTwo from '../../assets/images/japan/fushimi.jpg';
-import japanDestinationOne from '../../assets/images/japan/kyoto.jpg';
-import japanDestinationThree from '../../assets/images/japan/osaka.jpg';
-import japanHero from '../../assets/images/japan/tokyo.jpg';
-import { default as spainDestinationThree, default as spainHero } from '../../assets/images/spain/barcelona.jpg';
-import spainDestinationTwo from '../../assets/images/spain/granada.jpg';
-import spainDestinationOne from '../../assets/images/spain/seville.jpg';
+const italyDestinationOne = require('../../assets/images/italy/florence.jpg') as ImageSourcePropType;
+const italyDestinationTwo = require('../../assets/images/italy/rome.jpg') as ImageSourcePropType;
+const italyDestinationThree = require('../../assets/images/italy/florence.jpg') as ImageSourcePropType;
+const italyHero = require('../../assets/images/italy/rome.jpg') as ImageSourcePropType;
+
+const japanDestinationOne = require('../../assets/images/japan/kyoto.jpg') as ImageSourcePropType;
+const japanDestinationTwo = require('../../assets/images/japan/fushimi.jpg') as ImageSourcePropType;
+const japanDestinationThree = require('../../assets/images/japan/osaka.jpg') as ImageSourcePropType;
+const japanHero = require('../../assets/images/japan/tokyo.jpg') as ImageSourcePropType;
+
+const spainDestinationOne = require('../../assets/images/spain/seville.jpg') as ImageSourcePropType;
+const spainDestinationTwo = require('../../assets/images/spain/granada.jpg') as ImageSourcePropType;
+const spainDestinationThree = require('../../assets/images/spain/barcelona.jpg') as ImageSourcePropType;
+const spainHero = require('../../assets/images/spain/barcelona.jpg') as ImageSourcePropType;
 
 export type Destination = {
   slug: string;

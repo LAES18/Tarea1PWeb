@@ -2,13 +2,14 @@ import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { SymbolView } from 'expo-symbols';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { getCountryBySlug } from '@/data/port-destinations';
+import { createViaje, deleteViaje, getApiToken, listViajes, updateViaje, type ApiViaje } from '@/services/travel-api';
 import { useTravelerProfile } from '@/utils/profile-storage';
 
 const initialChecklist = [
@@ -19,6 +20,116 @@ const initialChecklist = [
 ];
 
 export default function PlanScreen() {
+  return <ApiTripsManager />;
+}
+
+function ApiTripsManager() {
+  const [viajes, setViajes] = useState<ApiViaje[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [destino, setDestino] = useState('');
+  const [pais, setPais] = useState('');
+  const [inicio, setInicio] = useState('2026-10-01');
+  const [fin, setFin] = useState('2026-10-05');
+  const [descripcion, setDescripcion] = useState('');
+  const [estado, setEstado] = useState<ApiViaje['estado']>('planeado');
+  const [message, setMessage] = useState('');
+
+  const loadTrips = () => listViajes().then(setViajes).catch((error: Error) => setMessage(error.message));
+
+  useEffect(() => {
+    if (getApiToken()) {
+      loadTrips();
+    } else {
+      setMessage('Inicia sesión desde Perfil para administrar tus viajes.');
+    }
+  }, []);
+
+  const clearForm = () => {
+    setEditingId(null);
+    setDestino('');
+    setPais('');
+    setDescripcion('');
+    setEstado('planeado');
+  };
+
+  const saveTrip = async () => {
+    try {
+      const payload = { destino, pais, fecha_inicio: inicio, fecha_fin: fin, descripcion, estado };
+      if (editingId) {
+        await updateViaje(editingId, payload);
+        setMessage('Viaje actualizado correctamente.');
+      } else {
+        await createViaje(payload);
+        setMessage('Viaje creado correctamente.');
+      }
+      clearForm();
+      await loadTrips();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'No se pudo guardar el viaje.');
+    }
+  };
+
+  const startEditing = (viaje: ApiViaje) => {
+    setEditingId(viaje.id);
+    setDestino(viaje.destino);
+    setPais(viaje.pais);
+    setInicio(viaje.fecha_inicio);
+    setFin(viaje.fecha_fin);
+    setDescripcion(viaje.descripcion);
+    setEstado(viaje.estado);
+  };
+
+  const removeTrip = async (id: number) => {
+    try {
+      await deleteViaje(id);
+      setViajes((items) => items.filter((item) => item.id !== id));
+      setMessage('Viaje eliminado correctamente.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'No se pudo eliminar el viaje.');
+    }
+  };
+
+  return (
+    <ThemedView style={styles.screen}>
+      <StatusBar style="auto" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="subtitle">Administrar viajes</ThemedText>
+          <ThemedText themeColor="textSecondary">CRUD conectado a Laravel mediante token.</ThemedText>
+          <ThemedView type="backgroundElement" style={styles.formCard}>
+            <ThemedText type="smallBold">{editingId ? 'Editar viaje' : 'Nuevo viaje'}</ThemedText>
+            {[['Destino', destino, setDestino], ['País', pais, setPais], ['Fecha inicio (AAAA-MM-DD)', inicio, setInicio], ['Fecha fin (AAAA-MM-DD)', fin, setFin], ['Descripción', descripcion, setDescripcion]].map(([placeholder, value, setter]) => (
+              <TextInput key={placeholder as string} value={value as string} onChangeText={setter as (value: string) => void} placeholder={placeholder as string} placeholderTextColor="#8DA2B8" style={styles.input} />
+            ))}
+            <ThemedText type="smallBold">Estado: {estado}</ThemedText>
+            <ThemedView style={styles.statusRow}>
+              {(['planeado', 'en curso', 'completado'] as const).map((value) => (
+                <Pressable key={value} onPress={() => setEstado(value)} style={[styles.statusButton, estado === value && styles.statusButtonActive]}>
+                  <ThemedText type="small">{value}</ThemedText>
+                </Pressable>
+              ))}
+            </ThemedView>
+            <Pressable onPress={saveTrip} style={styles.saveButton}><ThemedText type="smallBold" themeColor="text">{editingId ? 'Actualizar viaje' : 'Crear viaje'}</ThemedText></Pressable>
+            {editingId && <Pressable onPress={clearForm}><ThemedText themeColor="textSecondary">Cancelar edición</ThemedText></Pressable>}
+            {message !== '' && <ThemedText themeColor="textSecondary">{message}</ThemedText>}
+          </ThemedView>
+          {viajes.map((viaje) => (
+            <ThemedView key={viaje.id} type="backgroundElement" style={styles.tripCard}>
+              <ThemedText type="smallBold">{viaje.destino}, {viaje.pais}</ThemedText>
+              <ThemedText themeColor="textSecondary">{viaje.estado} · {viaje.fecha_inicio} al {viaje.fecha_fin}</ThemedText>
+              <ThemedView style={styles.actionsRow}>
+                <Pressable onPress={() => startEditing(viaje)} style={styles.secondaryButton}><ThemedText type="smallBold">Editar</ThemedText></Pressable>
+                <Pressable onPress={() => removeTrip(viaje.id)} style={styles.deleteButton}><ThemedText type="smallBold" themeColor="text">Eliminar</ThemedText></Pressable>
+              </ThemedView>
+            </ThemedView>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function LegacyPlanScreen() {
   const [checklist, setChecklist] = useState(initialChecklist);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(18)).current;
@@ -84,6 +195,16 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   safeArea: { flex: 1 },
   content: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
+  formCard: { padding: Spacing.three, gap: Spacing.two, borderRadius: Spacing.three, borderWidth: 1, borderColor: 'rgba(15, 23, 42, 0.08)' },
+  input: { minHeight: 46, borderWidth: 1, borderColor: 'rgba(15, 23, 42, 0.12)', borderRadius: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, backgroundColor: 'rgba(255,255,255,0.75)' },
+  statusRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.one },
+  statusButton: { borderWidth: 1, borderColor: 'rgba(15, 23, 42, 0.12)', borderRadius: Spacing.two, paddingHorizontal: Spacing.two, paddingVertical: Spacing.one },
+  statusButtonActive: { backgroundColor: '#A7F3D0', borderColor: '#0F766E' },
+  saveButton: { backgroundColor: '#0F766E', borderRadius: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two, alignItems: 'center' },
+  tripCard: { padding: Spacing.three, gap: Spacing.two, borderRadius: Spacing.three, borderWidth: 1, borderColor: 'rgba(15, 23, 42, 0.08)' },
+  actionsRow: { flexDirection: 'row', gap: Spacing.two },
+  secondaryButton: { borderWidth: 1, borderColor: '#0F766E', borderRadius: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
+  deleteButton: { backgroundColor: '#DC2626', borderRadius: Spacing.two, paddingHorizontal: Spacing.three, paddingVertical: Spacing.two },
   intro: { lineHeight: 22 },
   heroCard: {
     borderRadius: Spacing.three,

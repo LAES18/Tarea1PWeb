@@ -1,98 +1,50 @@
-import {
-    TabList,
-    TabListProps,
-    Tabs,
-    TabSlot,
-    TabTrigger,
-    TabTriggerSlotProps,
-} from 'expo-router/ui';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Link, Stack, usePathname } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
+import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+const tabs = [
+  { href: '/', label: 'Inicio', icon: '⌂' },
+  { href: '/explore', label: 'Descubrir', icon: '▣' },
+  { href: '/plan', label: 'Plan', icon: '✓' },
+  { href: '/profile', label: 'Perfil', icon: '◉' },
+] as const;
 
 export default function AppTabs() {
-  return (
-    <Tabs>
-      <TabSlot style={{ height: '100%' }} />
-      <TabList asChild>
-        <CustomTabList>
-          <TabTrigger name="index" href="/" asChild>
-            <TabButton>Inicio</TabButton>
-          </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Descubrir</TabButton>
-          </TabTrigger>
-          <TabTrigger name="plan" href="/plan" asChild>
-            <TabButton>Plan</TabButton>
-          </TabTrigger>
-          <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton>Perfil</TabButton>
-          </TabTrigger>
-        </CustomTabList>
-      </TabList>
-    </Tabs>
-  );
-}
+  const pathname = usePathname();
+  const scheme = useColorScheme();
+  const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
-      <ThemedView
-        type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-        style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
-          {children}
-        </ThemedText>
-      </ThemedView>
-    </Pressable>
-  );
-}
-
-export function CustomTabList(props: TabListProps) {
-  return (
-    <View {...props} style={styles.tabListContainer}>
-      <ThemedView type="backgroundElement" style={styles.innerContainer}>
-        <ThemedText type="smallBold" style={styles.brandText}>
-          Mi viaje
-        </ThemedText>
-        {props.children}
-      </ThemedView>
+    <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <Stack screenOptions={{ headerShown: false }} />
+      <View style={[styles.tabBar, { backgroundColor: colors.backgroundElement }]}>
+        <View style={[styles.tabInner, { borderColor: colors.backgroundSelected }]}>
+          <Text style={[styles.brand, { color: colors.text }]}>Mi viaje</Text>
+          {tabs.map((tab) => {
+            const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
+            return (
+              <Link key={tab.href} href={tab.href} asChild>
+                <Pressable style={StyleSheet.flatten([styles.tab, active && { backgroundColor: colors.backgroundSelected }])}>
+                  <Text style={StyleSheet.flatten([styles.icon, { color: colors.textSecondary }])}>{tab.icon}</Text>
+                  <Text style={StyleSheet.flatten([styles.label, { color: active ? colors.text : colors.textSecondary }])}>{tab.label}</Text>
+                </Pressable>
+              </Link>
+            );
+          })}
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  tabListContainer: {
-    position: 'absolute',
-    width: '100%',
-    padding: Spacing.three,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  innerContainer: {
-    paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.five,
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexGrow: 1,
-    gap: Spacing.two,
-    maxWidth: MaxContentWidth,
-    flexWrap: 'wrap',
-  },
-  brandText: {
-    marginRight: 'auto',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  tabButtonView: {
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
-  },
+  root: { flex: 1 },
+  tabBar: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.three, alignItems: 'center' },
+  tabInner: { width: '100%', maxWidth: MaxContentWidth, borderWidth: 1, borderRadius: Spacing.five, padding: Spacing.one, flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  brand: { fontSize: 14, fontWeight: 700, marginHorizontal: Spacing.two },
+  tab: { minWidth: 90, flex: 1, borderRadius: Spacing.three, paddingVertical: Spacing.two, paddingHorizontal: Spacing.two, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: Spacing.one },
+  icon: { fontSize: 16, fontWeight: 700 },
+  label: { fontSize: 14, fontWeight: 600 },
 });

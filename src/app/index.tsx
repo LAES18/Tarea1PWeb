@@ -31,21 +31,28 @@ export default function HomeScreen() {
         <ScrollView contentContainerStyle={styles.content}>
           <Animated.View style={{ opacity: fadeIn, transform: [{ translateY: slideUp }] }}>
             <ThemedView type="backgroundElement" style={styles.heroCard}>
-              <ThemedText type="title">{activeCountry.heroTitle}</ThemedText>
+              <ThemedText type="title">Agenda de viajes</ThemedText>
               <ThemedText themeColor="textSecondary" style={styles.heroText}>
-                Hola {travelerName}, {activeCountry.intro}
+                Hola {travelerName}, descubre destinos y organiza tu próxima aventura.
               </ThemedText>
               <Image source={activeCountry.heroImage} style={styles.heroImage} contentFit="cover" transition={400} />
+              <ThemedText type="smallBold">Tu destino destacado: {activeCountry.name}</ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.cardText}>
+                {activeCountry.intro}
+              </ThemedText>
             </ThemedView>
           </Animated.View>
 
-          <ThemedText type="subtitle">Destinos destacados en {activeCountry.name}</ThemedText>
+          <ThemedText type="subtitle">Destinos destacados</ThemedText>
           {activeCountry.destinations.map((item) => (
             <Animated.View key={item.slug} style={{ opacity: fadeIn, transform: [{ translateY: slideUp }] }}>
               <ThemedView type="backgroundElement" style={styles.card}>
                 <ThemedText type="smallBold">{item.title}</ThemedText>
                 <ThemedText themeColor="textSecondary" style={styles.cardText}>
                   {item.description}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {item.location} · Mejor momento: {item.bestTime}
                 </ThemedText>
               </ThemedView>
             </Animated.View>
@@ -58,8 +65,14 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  safeArea: { flex: 1 },
-  content: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
+  safeArea: {
+    flex: 1,
+  },
+  content: {
+    padding: Spacing.four,
+    gap: Spacing.three,
+    paddingBottom: Spacing.six,
+  },
   heroCard: {
     borderRadius: Spacing.four,
     padding: Spacing.four,

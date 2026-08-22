@@ -49,14 +49,15 @@ export function getCurrentTravelerProfile() {
 
 export function subscribeTravelerProfile(listener: (profile: TravelerProfile | null) => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 export function useTravelerProfile() {
   const [profile, setProfile] = useState<TravelerProfile | null>(() => getCurrentTravelerProfile());
 
   useEffect(() => {
-    setProfile(getCurrentTravelerProfile());
     return subscribeTravelerProfile(setProfile);
   }, []);
 

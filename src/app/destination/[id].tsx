@@ -1,21 +1,89 @@
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef } from 'react';
-import { Animated, ScrollView, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { getCountryBySlug } from '@/data/port-destinations';
+import { getApiToken, getViaje, searchPhotos, type ApiViaje } from '@/services/travel-api';
 import { useTravelerProfile } from '@/utils/profile-storage';
 
 export default function DestinationDetailScreen() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; source?: string }>();
+  if (params.source === 'api') {
+    return <ApiTripDetailScreen id={Number(params.id)} />;
+  }
+
+  return <LocalDestinationDetailScreen id={params.id} />;
+}
+
+function ApiTripDetailScreen({ id }: { id: number }) {
+  const [viaje, setViaje] = useState<ApiViaje | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!getApiToken()) {
+      setError('Necesitas iniciar sesión para consultar este viaje.');
+      return;
+    }
+
+    getViaje(id)
+      .then((result) => {
+        setViaje(result);
+        if (result.imagen) {
+          setImageUrl(result.imagen);
+          return;
+        }
+
+        return searchPhotos(`${result.destino} ${result.pais}`, 1).then((photos) => {
+          setImageUrl(photos.photos[0]?.src.large ?? null);
+        });
+      })
+      .catch((reason: Error) => setError(reason.message));
+  }, [id]);
+
+  if (error || !viaje) {
+    return (
+      <ThemedView style={styles.screen}>
+        <SafeAreaView style={styles.safeArea}>
+          <ThemedText type="subtitle">{error || 'Cargando viaje...'}</ThemedText>
+        </SafeAreaView>
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.screen}>
+      <StatusBar style="auto" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.content}>
+          {imageUrl && <Image source={{ uri: imageUrl }} style={styles.heroImage} contentFit="cover" />}
+          <ThemedView type="backgroundElement" style={styles.card}>
+            <ThemedText type="subtitle">{viaje.destino}</ThemedText>
+            <ThemedText themeColor="textSecondary">{viaje.pais} · {viaje.estado}</ThemedText>
+            <ThemedText style={styles.description}>{viaje.descripcion}</ThemedText>
+            <ThemedText themeColor="textSecondary">Del {viaje.fecha_inicio} al {viaje.fecha_fin}</ThemedText>
+          </ThemedView>
+          <Link href="/explore" asChild>
+            <Pressable style={styles.backButton}>
+              <ThemedText type="smallBold">Volver a mis viajes</ThemedText>
+            </Pressable>
+          </Link>
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function LocalDestinationDetailScreen({ id }: { id?: string }) {
   const profile = useTravelerProfile();
   const activeCountry = getCountryBySlug(profile?.country);
-  const destination = activeCountry.destinations.find((item) => item.slug === params.id);
+  const destination = activeCountry.destinations.find((item) => item.slug === id);
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(18)).current;
 
