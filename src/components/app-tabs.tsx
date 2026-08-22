@@ -1,17 +1,12 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { useColorScheme } from 'react-native';
-
-import { Colors } from '@/constants/theme';
 
 export default function AppTabs() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
   return (
     <NativeTabs
       backgroundColor="#DCE8F2"
       indicatorColor="#F4B942"
       iconColor="#334155"
+      tintColor="#334155"
       labelStyle={{ default: { color: '#334155' }, selected: { color: '#0F172A' } }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Icon sf="house.fill" />

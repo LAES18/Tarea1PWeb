@@ -1,4 +1,4 @@
-import { Link, Stack, usePathname } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -25,12 +25,13 @@ export default function AppTabs() {
           {tabs.map((tab) => {
             const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
             return (
-              <Link key={tab.href} href={tab.href} asChild>
-                <Pressable style={StyleSheet.flatten([styles.tab, active && styles.tabActive])}>
-                  <Text style={StyleSheet.flatten([styles.icon, active && styles.activeText])}>{tab.icon}</Text>
-                  <Text style={StyleSheet.flatten([styles.label, active && styles.activeText])}>{tab.label}</Text>
-                </Pressable>
-              </Link>
+              <Pressable
+                key={tab.href}
+                onPress={() => router.push(tab.href)}
+                style={StyleSheet.flatten([styles.tab, active && styles.tabActive])}>
+                <Text style={StyleSheet.flatten([styles.icon, active && styles.activeText])}>{tab.icon}</Text>
+                <Text style={StyleSheet.flatten([styles.label, active && styles.activeText])}>{tab.label}</Text>
+              </Pressable>
             );
           })}
         </View>

@@ -110,11 +110,16 @@ async function request<T>(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new Error(`No se pudo conectar con Laravel en ${API_BASE_URL}. Inicia el servidor con php artisan serve.`);
+  }
 
   const raw = await response.text();
   let parsed: unknown = null;
