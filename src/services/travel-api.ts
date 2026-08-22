@@ -1,4 +1,7 @@
 
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export type ApiLoginResponse = {
@@ -67,9 +70,22 @@ export type PexelsSearchResponse = {
   photos: PexelsPhoto[];
 };
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_TRAVEL_API_URL ??
-  'http://127.0.0.1:8000/api';
+function resolveApiBaseUrl() {
+  const configuredUrl = process.env.EXPO_PUBLIC_TRAVEL_API_URL;
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (Platform.OS === 'web') {
+    return 'http://127.0.0.1:8000/api';
+  }
+
+  const hostUri = Constants.expoConfig?.hostUri;
+  const host = hostUri?.split(':')[0];
+  return `http://${host ?? '127.0.0.1'}:8000/api`;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 const TOKEN_STORAGE_KEY = 'travel-api-token';
 
 let cachedToken: string | null = null;
