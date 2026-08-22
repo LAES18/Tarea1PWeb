@@ -1,0 +1,22 @@
+{
+  "info": {
+    "name": "Agenda de Viajes - Laravel 13",
+    "description": "Registro, login con Sanctum, CRUD de viajes y consulta protegida de fotos Pexels.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "viajeId", "value": "1" }
+  ],
+  "item": [
+    { "name": "Registro", "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Alumno Demo\",\n  \"email\": \"alumno@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}" }, "url": "{{baseUrl}}/registro" }, "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('token', pm.response.json().token);"] } }] },
+    { "name": "Login", "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"alumno@example.com\",\n  \"password\": \"password123\",\n  \"device_name\": \"postman\"\n}" }, "url": "{{baseUrl}}/login" }, "event": [{ "listen": "test", "script": { "exec": ["if (pm.response.code === 200) pm.collectionVariables.set('token', pm.response.json().token);"] } }] },
+    { "name": "Listar viajes", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/viajes" } },
+    { "name": "Crear viaje", "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"destino\": \"Tokyo\",\n  \"pais\": \"Japon\",\n  \"fecha_inicio\": \"2026-10-01\",\n  \"fecha_fin\": \"2026-10-05\",\n  \"descripcion\": \"Viaje cultural por Tokyo\",\n  \"imagen\": null,\n  \"estado\": \"planeado\"\n}" }, "url": "{{baseUrl}}/viajes" } },
+    { "name": "Detalle de viaje", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/viajes/{{viajeId}}" } },
+    { "name": "Actualizar viaje", "request": { "method": "PUT", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "body": { "mode": "raw", "raw": "{\n  \"estado\": \"completado\",\n  \"descripcion\": \"Viaje actualizado desde Postman\"\n}" }, "url": "{{baseUrl}}/viajes/{{viajeId}}" } },
+    { "name": "Eliminar viaje", "request": { "method": "DELETE", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/viajes/{{viajeId}}" } },
+    { "name": "Buscar fotos Pexels", "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/fotos?query=Tokyo&per_page=3" } }
+  ]
+}
