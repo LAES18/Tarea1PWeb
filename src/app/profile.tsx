@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +8,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { countries, getCountryBySlug } from '@/data/port-destinations';
+import { loginAndStoreToken, registerAndStoreToken } from '@/services/travel-api';
 import { saveTravelerProfile, useTravelerProfile } from '@/utils/profile-storage';
 
 const stats = [
@@ -21,17 +22,12 @@ const preferences = ['Playas', 'Cultura', 'Fotografía', 'Gastronomía'];
 export default function ProfileScreen() {
   const [notificationsOn, setNotificationsOn] = useState(true);
   const profile = useTravelerProfile();
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [countrySlug, setCountrySlug] = useState('japan');
-
-  useEffect(() => {
-    if (profile) {
-      setName(profile.name);
-      setAge(profile.age);
-      setCountrySlug(profile.country || 'japan');
-    }
-  }, [profile]);
+  const [name, setName] = useState(profile?.name ?? '');
+  const [age, setAge] = useState(profile?.age ?? '');
+  const [countrySlug, setCountrySlug] = useState(profile?.country ?? 'japan');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authMessage, setAuthMessage] = useState('');
 
   const activeCountry = getCountryBySlug(countrySlug);
 
@@ -54,6 +50,42 @@ export default function ProfileScreen() {
   const handleCountrySelect = (nextCountrySlug: string) => {
     setCountrySlug(nextCountrySlug);
     persistProfile(nextCountrySlug);
+  };
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setAuthMessage('Escribe tu correo y contraseña.');
+      return;
+    }
+
+    try {
+      await loginAndStoreToken(email.trim(), password);
+      setAuthMessage('Sesión iniciada. Ya puedes consultar tus viajes.');
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : 'No se pudo iniciar sesión.');
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!name.trim()) {
+      setAuthMessage('Escribe tu nombre para crear la cuenta.');
+      return;
+    }
+    if (!email.trim()) {
+      setAuthMessage('Escribe un correo electrónico.');
+      return;
+    }
+    if (password.length < 8) {
+      setAuthMessage('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+
+    try {
+      await registerAndStoreToken(name.trim(), email.trim(), password);
+      setAuthMessage('Cuenta creada y sesión iniciada. Ya puedes consultar tus viajes.');
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : 'No se pudo crear la cuenta.');
+    }
   };
 
   return (
@@ -124,6 +156,38 @@ export default function ProfileScreen() {
                 Guardar perfil
               </ThemedText>
             </Pressable>
+          </ThemedView>
+
+          <ThemedView type="backgroundElement" style={styles.preferenceCard}>
+            <ThemedText type="smallBold">Acceso a la API</ThemedText>
+            <ThemedText themeColor="textSecondary" style={styles.cardText}>
+              Inicia sesión para generar el token que protege tus viajes.
+            </ThemedText>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Correo electrónico"
+              style={styles.input}
+              placeholderTextColor="#8DA2B8"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Contraseña"
+              style={styles.input}
+              placeholderTextColor="#8DA2B8"
+              secureTextEntry
+            />
+            <Pressable onPress={handleLogin} style={styles.saveButton}>
+              <ThemedText type="smallBold" themeColor="text">Iniciar sesión</ThemedText>
+            </Pressable>
+            <Pressable onPress={handleRegister} style={styles.registerButton}>
+              <ThemedText type="smallBold">Crear cuenta</ThemedText>
+            </Pressable>
+            {authMessage !== '' && <ThemedText themeColor="textSecondary">{authMessage}</ThemedText>}
           </ThemedView>
 
           <ThemedView type="backgroundElement" style={styles.preferenceCard}>
@@ -225,6 +289,14 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     backgroundColor: '#0F766E',
+    borderRadius: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
+  },
+  registerButton: {
+    borderWidth: 1,
+    borderColor: '#0F766E',
     borderRadius: Spacing.three,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
