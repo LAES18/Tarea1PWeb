@@ -1,0 +1,77 @@
+{
+  "info": {
+    "name": "Travel API Local CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://127.0.0.1:8000/api" },
+    { "key": "token", "value": "" },
+    { "key": "destinationId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"demo@mail.com\",\n  \"password\": \"password123\",\n  \"device_name\": \"postman\"\n}"
+        },
+        "url": "{{baseUrl}}/login"
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"]
+        }
+      }]
+    },
+    {
+      "name": "List destinations",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/destinations?country=japan"
+      }
+    },
+    {
+      "name": "Create destination",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"slug\": \"tokyo-api\",\n  \"country\": \"japan\",\n  \"title\": \"Tokio API\",\n  \"location\": \"Shibuya\",\n  \"description\": \"Destino creado desde Postman\",\n  \"vibe\": \"Urbano\",\n  \"highlights\": [\"Luces\", \"Comida\"],\n  \"best_time\": \"7:00 p.m.\",\n  \"route\": \"Ruta por el centro\",\n  \"image_url\": \"https://images.pexels.com/photos/2506923/pexels-photo-2506923.jpeg\"\n}"
+        },
+        "url": "{{baseUrl}}/destinations"
+      }
+    },
+    {
+      "name": "Update destination",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"title\": \"Tokio API actualizado\"\n}" },
+        "url": "{{baseUrl}}/destinations/{{destinationId}}"
+      }
+    },
+    {
+      "name": "Delete destination",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{baseUrl}}/destinations/{{destinationId}}"
+      }
+    }
+  ]
+}
