@@ -1,7 +1,7 @@
 ﻿import { Image } from 'expo-image';
-import { Link, router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,18 +22,23 @@ function ApiTripsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
+    setLoading(true);
+    setError('');
     if (!getApiToken()) {
       setLoading(false);
-      setError('Inicia sesión para consultar tus viajes protegidos por token.');
-      return;
+      return undefined;
     }
 
     listViajes()
       .then(setViajes)
       .catch((reason: Error) => setError(reason.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, []));
+
+  if (!getApiToken()) {
+    return <LegacyDiscoverScreen />;
+  }
 
   return (
     <ThemedView style={styles.screen}>
@@ -131,13 +136,13 @@ function LegacyDiscoverScreen() {
                         <ThemedText type="smallBold">{isSaved ? 'Guardado' : 'Guardar'}</ThemedText>
                       </Pressable>
 
-                      <Link href={{ pathname: '/destination/[id]', params: { id: place.slug } }} asChild>
-                        <Pressable style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.85 : 1 }]}> 
-                          <ThemedText type="smallBold" themeColor="text">
-                            Ver detalle
-                          </ThemedText>
-                        </Pressable>
-                      </Link>
+                      <Pressable
+                        onPress={() => router.push({ pathname: '/destination/[id]', params: { id: place.slug } })}
+                        style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.85 : 1 }]}>
+                        <ThemedText type="smallBold" themeColor="text">
+                          Ver detalle
+                        </ThemedText>
+                      </Pressable>
                     </ThemedView>
                   </ThemedView>
                 </ThemedView>
