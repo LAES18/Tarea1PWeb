@@ -20,7 +20,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::create($data);
-        $token = $user->createToken('postman')->plainTextToken;
+        $token = $user->createToken('postman')->accessToken;
 
         return response()->json([
             'message' => 'Usuario registrado correctamente.',
@@ -47,7 +47,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Inicio de sesión correcto.',
             'user' => $user,
-            'token' => $user->createToken($credentials['device_name'] ?? 'expo-app')->plainTextToken,
+            'token' => $user->createToken($credentials['device_name'] ?? 'expo-app')->accessToken,
         ]);
     }
 
