@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Agenda de Viajes - Laravel 13",
-    "description": "Registro, login con Sanctum, CRUD de viajes y consulta protegida de fotos Pexels.",
+    "description": "Registro, login con Laravel Passport, CRUD protegido de viajes y consulta protegida de fotos Pexels. Ejecuta Registro o Login primero para guardar el Bearer token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
