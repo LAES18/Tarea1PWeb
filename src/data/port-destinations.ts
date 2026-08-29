@@ -1,18 +1,18 @@
 import type { ImageSourcePropType } from 'react-native';
 
-const italyDestinationOne = require('../../assets/images/italy/florence.jpg') as ImageSourcePropType;
-const italyDestinationTwo = require('../../assets/images/italy/rome.jpg') as ImageSourcePropType;
+const italyDestinationOne = require('../../assets/images/italy/rome.jpg') as ImageSourcePropType;
+const italyDestinationTwo = require('../../assets/images/italy/florence.jpg') as ImageSourcePropType;
 const italyDestinationThree = require('../../assets/images/italy/florence.jpg') as ImageSourcePropType;
 const italyHero = require('../../assets/images/italy/rome.jpg') as ImageSourcePropType;
 
-const japanDestinationOne = require('../../assets/images/japan/kyoto.jpg') as ImageSourcePropType;
-const japanDestinationTwo = require('../../assets/images/japan/fushimi.jpg') as ImageSourcePropType;
-const japanDestinationThree = require('../../assets/images/japan/osaka.jpg') as ImageSourcePropType;
+const japanDestinationOne = require('../../assets/images/japan/tokyo.jpg') as ImageSourcePropType;
+const japanDestinationTwo = require('../../assets/images/japan/kyoto.jpg') as ImageSourcePropType;
+const japanDestinationThree = require('../../assets/images/japan/fushimi.jpg') as ImageSourcePropType;
 const japanHero = require('../../assets/images/japan/tokyo.jpg') as ImageSourcePropType;
 
-const spainDestinationOne = require('../../assets/images/spain/seville.jpg') as ImageSourcePropType;
-const spainDestinationTwo = require('../../assets/images/spain/granada.jpg') as ImageSourcePropType;
-const spainDestinationThree = require('../../assets/images/spain/barcelona.jpg') as ImageSourcePropType;
+const spainDestinationOne = require('../../assets/images/spain/barcelona.jpg') as ImageSourcePropType;
+const spainDestinationTwo = require('../../assets/images/spain/seville.jpg') as ImageSourcePropType;
+const spainDestinationThree = require('../../assets/images/spain/granada.jpg') as ImageSourcePropType;
 const spainHero = require('../../assets/images/spain/barcelona.jpg') as ImageSourcePropType;
 
 export type Destination = {

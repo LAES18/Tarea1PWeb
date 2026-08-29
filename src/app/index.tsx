@@ -47,6 +47,7 @@ export default function HomeScreen() {
           {activeCountry.destinations.map((item) => (
             <Animated.View key={item.slug} style={{ opacity: fadeIn, transform: [{ translateY: slideUp }] }}>
               <ThemedView type="backgroundElement" style={styles.card}>
+                <Image source={item.image} style={styles.destinationImage} contentFit="cover" transition={400} />
                 <ThemedText type="smallBold">{item.title}</ThemedText>
                 <ThemedText themeColor="textSecondary" style={styles.cardText}>
                   {item.description}
@@ -90,4 +91,5 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(15, 23, 42, 0.06)',
   },
   cardText: { lineHeight: 20 },
+  destinationImage: { width: '100%', height: 160, borderRadius: Spacing.two },
 });
