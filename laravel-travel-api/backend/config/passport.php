@@ -45,4 +45,24 @@ return [
 
     'connection' => env('PASSPORT_CONNECTION'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | First-party OAuth Clients
+    |--------------------------------------------------------------------------
+    |
+    | These credentials are generated with `passport:client`. They remain on
+    | the server and let the login endpoint request user access tokens.
+    |
+    */
+
+    'password_client' => [
+        'id' => env('PASSPORT_PASSWORD_CLIENT_ID'),
+        'secret' => env('PASSPORT_PASSWORD_CLIENT_SECRET'),
+    ],
+
+    'client_credentials' => [
+        'id' => env('PASSPORT_CLIENT_ID'),
+        'secret' => env('PASSPORT_CLIENT_SECRET'),
+    ],
+
 ];
