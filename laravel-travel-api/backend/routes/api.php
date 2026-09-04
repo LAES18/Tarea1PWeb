@@ -8,6 +8,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('/registro', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::middleware('client')->get('/client/status', function () {
+    return response()->json([
+        'message' => 'Cliente OAuth autenticado correctamente.',
+    ]);
+});
+
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::apiResource('viajes', ViajeController::class);
