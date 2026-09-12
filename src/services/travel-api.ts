@@ -6,6 +6,10 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export type ApiLoginResponse = {
   token: string;
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: 'Bearer';
   user?: {
     id: number;
     name: string;
@@ -87,6 +91,8 @@ function resolveApiBaseUrl() {
 
 const API_BASE_URL = resolveApiBaseUrl();
 const TOKEN_STORAGE_KEY = 'travel-api-token';
+const REFRESH_TOKEN_STORAGE_KEY = 'travel-api-refresh-token';
+const APP_SCOPES = ['viajes.read', 'viajes.write', 'viajes.delete', 'fotos.read'];
 
 let cachedToken: string | null = null;
 
@@ -188,11 +194,18 @@ export function setApiToken(token: string) {
   }
 }
 
+function setRefreshToken(token: string) {
+  if (storageAvailable()) {
+    window.localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, token);
+  }
+}
+
 export function clearApiToken() {
   cachedToken = null;
 
   if (storageAvailable()) {
     window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+    window.localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
   }
 }
 
@@ -200,11 +213,12 @@ export async function loginAndStoreToken(email: string, password: string, device
   const result = await request<ApiLoginResponse>(
     '/login',
     'POST',
-    { email, password, device_name: deviceName },
+    { email, password, device_name: deviceName, scopes: APP_SCOPES },
     false,
   );
 
   setApiToken(result.token);
+  setRefreshToken(result.refresh_token);
   return result;
 }
 
@@ -217,11 +231,13 @@ export async function registerAndStoreToken(name: string, email: string, passwor
       email,
       password,
       password_confirmation: password,
+      scopes: APP_SCOPES,
     },
     false,
   );
 
   setApiToken(result.token);
+  setRefreshToken(result.refresh_token);
   return result;
 }
 
