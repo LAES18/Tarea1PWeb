@@ -38,6 +38,12 @@ class ViajeController extends Controller
 
     public function destroy(Request $request, Viaje $viaje): JsonResponse
     {
+        if (! $request->user()->tokenCan('viajes.delete') && ! $request->user()->tokenCan('admin')) {
+            return response()->json([
+                'message' => 'No tienes permiso para eliminar viajes.',
+            ], 403);
+        }
+
         $this->ensureOwner($request, $viaje);
         $viaje->delete();
 
