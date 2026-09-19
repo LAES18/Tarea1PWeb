@@ -1,7 +1,7 @@
 ﻿import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,9 +10,67 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { getCountryBySlug } from '@/data/port-destinations';
 import { useTheme } from '@/hooks/use-theme';
+import { getApiToken, listViajes, type ApiViaje } from '@/services/travel-api';
 import { useTravelerProfile } from '@/utils/profile-storage';
 
 export default function DiscoverScreen() {
+  return <ApiTripsScreen />;
+}
+
+function ApiTripsScreen() {
+  const [viajes, setViajes] = useState<ApiViaje[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useFocusEffect(useCallback(() => {
+    setLoading(true);
+    setError('');
+    if (!getApiToken()) {
+      setLoading(false);
+      return undefined;
+    }
+
+    listViajes()
+      .then(setViajes)
+      .catch((reason: Error) => setError(reason.message))
+      .finally(() => setLoading(false));
+  }, []));
+
+  if (!getApiToken()) {
+    return <LegacyDiscoverScreen />;
+  }
+
+  return (
+    <ThemedView style={styles.screen}>
+      <StatusBar style="auto" />
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ThemedText type="subtitle">Mis viajes</ThemedText>
+          <ThemedText themeColor="textSecondary">Recursos obtenidos desde tu API REST Laravel.</ThemedText>
+          {loading && <ThemedText>Cargando viajes...</ThemedText>}
+          {!loading && error !== '' && <ThemedText themeColor="textSecondary" style={styles.intro}>{error}</ThemedText>}
+          {!loading && error === '' && viajes.length === 0 && <ThemedText>No hay viajes registrados todavía.</ThemedText>}
+          {viajes.map((viaje) => (
+            <ThemedView key={viaje.id} type="backgroundElement" style={styles.destinationCard}>
+              <ThemedView style={styles.cardBody}>
+                <ThemedText type="smallBold">{viaje.destino}, {viaje.pais}</ThemedText>
+                <ThemedText themeColor="textSecondary">{viaje.fecha_inicio} al {viaje.fecha_fin}</ThemedText>
+                <ThemedText themeColor="textSecondary" numberOfLines={2}>{viaje.descripcion}</ThemedText>
+                <Pressable
+                  onPress={() => router.push({ pathname: '/destination/[id]', params: { id: String(viaje.id), source: 'api' } })}
+                  style={styles.primaryButton}>
+                  <ThemedText type="smallBold" themeColor="text">Ver detalle</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </ThemedView>
+          ))}
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function LegacyDiscoverScreen() {
   const theme = useTheme();
   const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const fadeIn = useRef(new Animated.Value(0)).current;
@@ -78,13 +136,13 @@ export default function DiscoverScreen() {
                         <ThemedText type="smallBold">{isSaved ? 'Guardado' : 'Guardar'}</ThemedText>
                       </Pressable>
 
-                      <Link href={{ pathname: '/destination/[id]', params: { id: place.slug } }} asChild>
-                        <Pressable style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.85 : 1 }]}> 
-                          <ThemedText type="smallBold" themeColor="text">
-                            Ver detalle
-                          </ThemedText>
-                        </Pressable>
-                      </Link>
+                      <Pressable
+                        onPress={() => router.push({ pathname: '/destination/[id]', params: { id: place.slug } })}
+                        style={({ pressed }) => [styles.primaryButton, { opacity: pressed ? 0.85 : 1 }]}>
+                        <ThemedText type="smallBold" themeColor="text">
+                          Ver detalle
+                        </ThemedText>
+                      </Pressable>
                     </ThemedView>
                   </ThemedView>
                 </ThemedView>
@@ -107,11 +165,6 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
     borderWidth: 1,
     borderColor: 'rgba(15, 23, 42, 0.08)',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 3,
   },
   intro: { lineHeight: 22 },
   summaryChip: { alignSelf: 'flex-start', borderRadius: Spacing.five, paddingHorizontal: Spacing.three, paddingVertical: Spacing.one },
@@ -120,11 +173,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(15, 23, 42, 0.08)',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 3,
   },
   destinationImage: { width: '100%', height: 180 },
   cardBody: { padding: Spacing.three, gap: Spacing.two },
